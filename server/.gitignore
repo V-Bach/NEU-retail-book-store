@@ -1,0 +1,10 @@
+# server/.gitignore
+
+# Dependencies
+/node_modules
+
+# Natural variables
+.env
+
+# Log file
+*.Log
