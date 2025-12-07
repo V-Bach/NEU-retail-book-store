@@ -23,4 +23,4 @@ const Author = sequelize.define('Author', {
     timestamps: false
 });
 
-nodule.exports = Author;
+module.exports = Author;

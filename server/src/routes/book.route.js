@@ -1,20 +1,26 @@
-// server/src/routes/book.route.js (ĐÃ SỬA LỖI CHÍNH TẢ)
+// server/src/routes/book.route.js (ĐÃ SỬA ĐỔI)
 
 const express = require('express');
 const router = express.Router();
 
+// Import Controller
+const bookController = require('../controllers/book.controller'); // <-- BƯỚC 1
+
 // Import Middleware
 const { authenticate, isAdmin } = require('../middleware/auth.middleware'); 
 
-// 1. API công khai (Public)
-router.get('/', (req, res) => {
-    res.status(200).json({ message: "Book routes are ready" });
-});
+// 1. API công khai (READ ALL): Lấy danh sách tất cả sách
+// Ví dụ: GET /api/books
+// *Lưu ý: Bạn sẽ cần tạo hàm getAllBooks trong Controller
+router.get('/', bookController.getAllBooks); // <-- Cập nhật để gọi hàm Controller
 
-// 2. API cần phân quyền (Protected - Admin Only)
-router.post('/', authenticate, isAdmin, (req, res) => {
-    res.status(201).json({ message: "Admin added a book" });
-});
+// 2. API cần phân quyền (CREATE): Thêm sách mới (Chỉ Admin)
+// Ví dụ: POST /api/books
+router.post('/', authenticate, isAdmin, bookController.createBook); // <-- Cập nhật để gọi hàm Controller
 
-// Sửa lỗi chính tả: moudle.exports -> module.exports
+// 3. API CÔNG KHAI: Lấy chi tiết sách theo ID
+// Ví dụ: GET /api/books/12
+router.get('/:id', bookController.getBookById); // <-- THÊM DÒNG NÀY
+
+// Xuất Router
 module.exports = router;

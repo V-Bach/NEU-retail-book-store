@@ -19,7 +19,7 @@ const Book = sequelize.define('Book', {
         allowNull: false
     },
     stock_quantity: {
-        type: DataTypes,INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false,
         defaultValue: 0
     },
@@ -37,4 +37,4 @@ const Book = sequelize.define('Book', {
     timestamps: true
 });
 
-nodule.exports = Book;
+module.exports = Book;
