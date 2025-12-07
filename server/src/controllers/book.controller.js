@@ -2,6 +2,7 @@
 
 const { Book, Category, Author } = require('../models/index');
 const { sequelize } = require('../config/db.config'); // Dùng cho transaction
+const googleBooksService = require('../services/googleBooks.service');
 
 exports.createBook = async (req, res) => {
     // 1. Tách mảng authors ID và Book Data
@@ -128,5 +129,25 @@ exports.getBookById = async (req, res) => {
     } catch (error) {
         console.error(`Error fetching book with ID ${id}:`, error);
         res.status(500).json({ message: 'Server error: Could not retrieve book details.' });
+    }
+};
+
+exports.searchExternalBooks = async (req, res) => {
+    const { q } = req.query; // Lấy query từ URL: ?q=Clean%20Code
+
+    if (!q) {
+        return res.status(400).json({ message: 'Missing search query parameter (q).' });
+    }
+
+    try {
+        const results = await googleBooksService.searchBooks(q);
+        
+        res.status(200).json({
+            message: `Found ${results.length} results from external API.`,
+            results
+        });
+    } catch (error) {
+        // Trả về lỗi 503 nếu không thể kết nối hoặc API Key lỗi
+        res.status(503).json({ message: 'Error retrieving data from external source. Please check API Key and service status.' });
     }
 };

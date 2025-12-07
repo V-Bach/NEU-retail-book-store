@@ -1,5 +1,3 @@
-// server/src/routes/book.route.js (ĐÃ SỬA ĐỔI)
-
 const express = require('express');
 const router = express.Router();
 
@@ -8,6 +6,10 @@ const bookController = require('../controllers/book.controller'); // <-- BƯỚC
 
 // Import Middleware
 const { authenticate, isAdmin } = require('../middleware/auth.middleware'); 
+
+// API công khai: tìm kiếm sách bên ngoài
+// Endpoint: GET /api/books/external-search?q=query
+router.get('/external-search', bookController.searchExternalBooks);
 
 // 1. API công khai (READ ALL): Lấy danh sách tất cả sách
 // Ví dụ: GET /api/books
