@@ -7,7 +7,6 @@ const googleBooksService = require('../services/googleBooks.service');
 exports.createBook = async (req, res) => {
     // 1. Tách mảng authors ID và Book Data
     const { authors, ...bookData } = req.body;
-
     
     if (!bookData.title || !bookData.price || !bookData.category_id) {
         return res.status(400).json({ 
@@ -46,7 +45,6 @@ exports.createBook = async (req, res) => {
         // 5. Trả về kết quả
         res.status(201).json({
             message: 'Book created successfully',
-            // Có thể thêm include: [Author, Category] để trả về chi tiết hơn
             book: newBook 
         });
     } catch (error) {
@@ -60,23 +58,19 @@ exports.getAllBooks = async (req, res) => {
     try {
         // Sử dụng phương thức findAll() của Sequelize để lấy tất cả bản ghi từ bảng Books
         const books = await Book.findAll({
-            // Sử dụng "include" để lấy dữ liệu từ các bảng quan hệ
             include: [
                 {
-                    model: Category, // Lấy thông tin Thể loại (quan hệ 1:N)
-                    as: 'category', // Phải khớp với alias đã đặt trong index.js
-                    attributes: ['name'] // Chỉ lấy trường 'name' của Category
+                    model: Category,
+                    as: 'category',
+                    attributes: ['name']
                 },
                 {
-                    model: Author, // Lấy thông tin Tác giả (quan hệ N:M)
-                    as: 'authors', // Phải khớp với alias đã đặt trong index.js
-                    // Chỉ lấy tên
+                    model: Author,
+                    as: 'authors',
                     attributes: ['author_id', 'first_name', 'last_name'],
-                    // Loại bỏ bảng trung gian khỏi kết quả trả về
                     through: { attributes: [] } 
                 }
             ],
-            // Sắp xếp theo tiêu đề
             order: [['title', 'ASC']]
         });
 
@@ -102,7 +96,6 @@ exports.getBookById = async (req, res) => {
     try {
         // 2. Sử dụng findByPk (Find by Primary Key)
         const book = await Book.findByPk(id, {
-            // Bao gồm thông tin Category và Author (giống như getAllBooks)
             include: [
                 {
                     model: Category,
@@ -147,7 +140,158 @@ exports.searchExternalBooks = async (req, res) => {
             results
         });
     } catch (error) {
-        // Trả về lỗi 503 nếu không thể kết nối hoặc API Key lỗi
         res.status(503).json({ message: 'Error retrieving data from external source. Please check API Key and service status.' });
+    }
+};
+
+// ========== CÁC FUNCTION MỚI CHO TÌM KIẾM NÂNG CAO ==========
+
+/**
+ * Tìm kiếm nâng cao từ Google Books API
+ */
+exports.advancedExternalSearch = async (req, res) => {
+    const {
+        title,
+        author,
+        isbn,
+        publisher,
+        subject,
+        keyword,
+        maxResults = 15,
+        orderBy = 'relevance',
+        printType = 'all',
+        lang = 'en'
+    } = req.query;
+
+    // Xây dựng params object
+    const searchParams = {
+        title,
+        author,
+        isbn,
+        publisher,
+        subject,
+        keyword,
+        orderBy,
+        printType,
+        lang
+    };
+
+    // Loại bỏ các trường undefined
+    Object.keys(searchParams).forEach(key => {
+        if (searchParams[key] === undefined) {
+            delete searchParams[key];
+        }
+    });
+
+    // Nếu không có tham số nào, trả về lỗi
+    if (Object.keys(searchParams).length === 0) {
+        return res.status(400).json({
+            message: 'At least one search parameter is required',
+            example: '/api/books/external/advanced?author=Stephen+King&title=The+Shining'
+        });
+    }
+
+    try {
+        const results = await googleBooksService.advancedSearch(searchParams, parseInt(maxResults));
+        
+        res.status(200).json({
+            message: `Found ${results.length} results from external API.`,
+            search_params: searchParams,
+            results
+        });
+    } catch (error) {
+        res.status(503).json({ 
+            message: 'Error retrieving data from external source.',
+            error: error.message 
+        });
+    }
+};
+
+/**
+ * Tìm kiếm sách theo tác giả từ Google Books API
+ */
+exports.searchExternalByAuthor = async (req, res) => {
+    const { author, maxResults = 15 } = req.query;
+    
+    if (!author) {
+        return res.status(400).json({ 
+            message: 'Author name is required. Example: /api/books/external/author?author=J.K.+Rowling' 
+        });
+    }
+
+    try {
+        const results = await googleBooksService.searchByAuthor(author, parseInt(maxResults));
+        
+        res.status(200).json({
+            message: `Found ${results.length} results for author "${author}" from external API.`,
+            author,
+            results
+        });
+    } catch (error) {
+        res.status(503).json({ 
+            message: 'Error retrieving data from external source.',
+            error: error.message 
+        });
+    }
+};
+
+/**
+ * Tìm kiếm sách theo ISBN từ Google Books API
+ */
+exports.searchExternalByISBN = async (req, res) => {
+    const { isbn } = req.query;
+    
+    if (!isbn) {
+        return res.status(400).json({ 
+            message: 'ISBN is required. Example: /api/books/external/isbn?isbn=9780545010221' 
+        });
+    }
+
+    try {
+        const results = await googleBooksService.searchByISBN(isbn);
+        
+        res.status(200).json({
+            message: `Found ${results.length} results for ISBN "${isbn}" from external API.`,
+            isbn,
+            results
+        });
+    } catch (error) {
+        res.status(503).json({ 
+            message: 'Error retrieving data from external source.',
+            error: error.message 
+        });
+    }
+};
+
+/**
+ * Lấy thông tin sách chi tiết từ Google Books bằng ID
+ */
+exports.getExternalBookById = async (req, res) => {
+    const { googleId } = req.params;
+    
+    if (!googleId) {
+        return res.status(400).json({ 
+            message: 'Google Books ID is required. Example: /api/books/external/zyTCAlFPjgYC' 
+        });
+    }
+
+    try {
+        const book = await googleBooksService.getBookByGoogleId(googleId);
+        
+        if (!book) {
+            return res.status(404).json({ 
+                message: `Book with Google ID ${googleId} not found.` 
+            });
+        }
+        
+        res.status(200).json({
+            message: 'Book details retrieved successfully.',
+            book
+        });
+    } catch (error) {
+        res.status(503).json({ 
+            message: 'Error retrieving book details from external source.',
+            error: error.message 
+        });
     }
 };
