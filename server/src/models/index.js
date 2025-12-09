@@ -6,6 +6,7 @@ const User = require('./User');
 const Book = require('./Book');
 const Category = require('./Category');
 const Author = require('./Author');
+const Review = require('./Review');
 
 // THIẾT LẬP QUAN HỆ (ASSOCIATIONS)
 
@@ -26,6 +27,9 @@ Book.belongsToMany(Author, {
     as: 'authors'
 });
 
+User.hasMany(Review, { foreignKey: 'user_id', as: 'reviews' });
+Review.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
 
 // 2. EXPORT CÁC MODELS 
 module.exports = {
@@ -33,5 +37,5 @@ module.exports = {
     Book,
     Category,
     Author,
-
+    Review,
 };

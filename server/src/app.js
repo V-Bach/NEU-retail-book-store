@@ -3,13 +3,17 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+
+// --- 1. import cau hinh ---
 const { connectDB } = require('./config/db.config');
-
-const app = express();
-
-// --- 1. IMPORT ROUTES (Đưa lên đầu) ---
+const { sequelize } = require('./config/db.config');
+const reviewRoutes = require('./routes/review.route');
 const authRouter = require('./routes/auth.route'); 
 const bookRouter = require('./routes/book.route');
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
 
 // --- 2. MIDDLEWARE (PHẢI LÀM VIỆC TRƯỚC ROUTES) ---
 // Middleware bắt buộc: Để đọc dữ liệu JSON gửi từ Front-end
@@ -22,6 +26,8 @@ app.use(cors());
 app.use('/api/auth', authRouter); 
 // Route Quản lý Sách (Book)
 app.use('/api/books', bookRouter); 
+// api review sach
+app.use('/api/reviews', reviewRoutes);
 
 // Route cơ bản (Luôn để ở cuối nhóm route để tránh xung đột)
 app.get('/', (req, res) => {
@@ -29,14 +35,23 @@ app.get('/', (req, res) => {
 });
 
 
-const PORT = process.env.PORT || 5000;
+async function startServer() {
+    try {
+        await connectDB();
+        console.log("Database connection successful");
 
-connectDB().then(() => {
-    app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`); 
-        console.log(`JWT secret loaded: ${!!process.env.JWT_SECRET}`);
-    });
-}). catch(err => {
-    console.error("Failed to start server due to database error:", err);
-    process.exit(1);
-});
+        await sequelize.sync({ alter: true });
+        console.log("Database synchronized successfully (table created/updated)");
+
+        app.listen(PORT, () => {
+            console.log(`Server is running on port ${PORT}`);
+            console.log(`JWT secret loaded: ${!!process.env.JWT_SECRET}`);
+        });
+    } catch (error) {
+        console.error("Failed to start server due to database error", error);
+
+        process.exit(1);
+    }
+}
+
+startServer();
