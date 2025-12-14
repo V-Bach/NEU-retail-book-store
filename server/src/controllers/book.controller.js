@@ -295,3 +295,68 @@ exports.getExternalBookById = async (req, res) => {
         });
     }
 };
+
+/**
+ * Cập nhật thông tin Bán lẻ (Giá và Tồn kho) của sách trong Local DB.
+ * PUT /api/books/:id (CHỈ ADMIN)
+ */
+
+exports.updateBook = async (req, res) => {
+    const { id } = req.params;
+    const { price, stock_quantity, is_available } = req.body;
+
+    const updateFields = {};
+    if(price !== undefined) updateFields.price = price;
+    if(stock_quantity !== undefined) updateFields.stock_quantity = stock_quantity;
+    if(is_available !== undefined) updateFields.is_available = is_available;
+
+    if(Object.keys(updateFields).length === 0) {
+        return res.status(400).json({
+            message: "No valid fields provided for update(only price, stock_quantity, is_available)"
+        });
+    }
+
+    try {
+        const [updateRowsCount] = await Book.update(updateFields, {
+            where: { book_id: id },
+        });
+
+        if(updateRowsCount === 0) {
+            return res.status(404).json({ message: `Book with id ${id} not found.` });
+        }
+
+        const updateBook = await Book.findByPk(id);
+
+        res.status(200).json({
+            message: 'Book inventory and price updated successfully',
+            book: updateBook
+        });
+    } catch(error) {
+        console.error('Error updating book: ', error);
+        res.status(500).json({ message: 'Server error: could not update book' });
+    }
+};
+
+/**
+ * Xóa sách khỏi Local DB (Đã ngừng kinh doanh / hết hàng vĩnh viễn).
+ * DELETE /api/books/:id (CHỈ ADMIN)
+ */
+
+exports.deleteBook = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const deletedCount = await Book.destroy({
+            where: { book_id: id },
+        });
+
+        if(deletedCount === 0) {
+            return res.status(404).json({ message: `Book with id ${id} not found.` });
+        }
+
+        res.status(200).json({ message: 'Book deleted successfully from local data store' });
+    } catch (error) {
+        console.error('Error deleting book: ', error);
+        res.status(500).json({ message: 'Server error: could not delete book' });
+    }
+};

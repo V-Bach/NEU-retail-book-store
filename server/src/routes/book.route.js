@@ -20,7 +20,7 @@ router.get('/:id', bookController.getBookById);
 
 // 3. API cần phân quyền: Thêm sách mới (Chỉ Admin)
 // POST /api/books (Đã bảo vệ bằng authenticate và isAdmin)
-router.post('/', authenticate, isAdmin, bookController.createBook); // <-- Đã xóa route trùng lặp
+router.post('/', authenticate, isAdmin, bookController.createBook); 
 
 // GET /api/books/external/search?q=query
 router.get('/external/search', bookController.searchExternalBooks);
@@ -36,6 +36,14 @@ router.get('/external/isbn', bookController.searchExternalByISBN);
 
 // GET /api/books/external/id/:googleId
 router.get('/external/id/:googleId', bookController.getExternalBookById);
+
+// 4. API cần phân quyền: CẬP NHẬT sách (Chỉ Admin - Cập nhật giá/tồn kho)
+// PUT /api/books/:id
+router.put('/:id', authenticate, isAdmin, bookController.updateBook); 
+
+// 5. API cần phân quyền: XOÁ sách (Chỉ Admin)
+// DELETE /api/books/:id
+router.delete('/:id', authenticate, isAdmin, bookController.deleteBook); 
 
 
 module.exports = router;
