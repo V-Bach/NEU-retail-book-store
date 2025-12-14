@@ -7,6 +7,8 @@ const Book = require('./Book');
 const Category = require('./Category');
 const Author = require('./Author');
 const Review = require('./Review');
+const CartItem = require('./CartItem');
+const Loan = require('./Loan');
 
 // THIẾT LẬP QUAN HỆ (ASSOCIATIONS)
 
@@ -30,8 +32,26 @@ Book.belongsToMany(Author, {
 User.hasMany(Review, { foreignKey: 'user_id', as: 'reviews' });
 Review.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
+// User <-> CartItem (1:N)
+User.hasMany(CartItem, { foreignKey: 'user_id', as: 'cart_items' });
+CartItem.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
-// 2. EXPORT CÁC MODELS 
+// Book <-> CartItem (1:N)
+// Đảm bảo book_id là khóa chính trong Book.js
+Book.hasMany(CartItem, { foreignKey: 'book_id', as: 'cart_item_entries' });
+CartItem.belongsTo(Book, { foreignKey: 'book_id', as: 'book' });
+
+
+// --- QUAN HỆ MƯỢN SÁCH (Loan) ---
+// User <-> Loan (1:N)
+User.hasMany(Loan, { foreignKey: 'user_id', as: 'loans' });
+Loan.belongsTo(User, { foreignKey: 'user_id', as: 'borrower' });
+
+// Book <-> Loan (1:N)
+Book.hasMany(Loan, { foreignKey: 'book_id', as: 'loan_records' });
+Loan.belongsTo(Book, { foreignKey: 'book_id', as: 'borrowed_book' });
+
+// EXPORT CÁC MODELS 
 module.exports = {
     User,
     Book,
