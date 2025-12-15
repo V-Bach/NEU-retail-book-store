@@ -10,6 +10,8 @@ const { sequelize } = require('./config/db.config');
 const reviewRoutes = require('./routes/review.route');
 const authRouter = require('./routes/auth.route'); 
 const bookRouter = require('./routes/book.route');
+const cartRoutes = require('./routes/cart.route');
+const loanRoutes = require('./routes/loan.route');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -28,6 +30,12 @@ app.use('/api/auth', authRouter);
 app.use('/api/books', bookRouter); 
 // api review sach
 app.use('/api/reviews', reviewRoutes);
+
+//route cart
+app.use('/api/cart', cartRoutes);
+
+//route loan
+app.use('/api/loans', loanRoutes);
 
 // Route cơ bản (Luôn để ở cuối nhóm route để tránh xung đột)
 app.get('/', (req, res) => {

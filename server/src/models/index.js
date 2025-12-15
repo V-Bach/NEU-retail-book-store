@@ -58,4 +58,6 @@ module.exports = {
     Category,
     Author,
     Review,
+    CartItem,
+    Loan,
 };
