@@ -42,7 +42,7 @@ app.use('/api/loans', loanRoutes);
 
 // Route cơ bản (Luôn để ở cuối nhóm route để tránh xung đột)
 app.get('/', (req, res) => {
-    res.send('retail book store API is running!');
+    res.send('retail book store API is running!');
 });
 
 
