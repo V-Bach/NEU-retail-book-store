@@ -20,21 +20,20 @@ const Loan = sequelize.define('Loan', {
         allowNull: false,
         defaultValue: DataTypes.NOW
     },
-    // Ngày phải trả (Tính toán dựa trên loan_duration)
     due_date: { 
         type: DataTypes.DATEONLY,
         allowNull: false
     },
     return_date: {
         type: DataTypes.DATEONLY,
-        allowNull: true // Null nếu chưa trả
+        allowNull: true 
     },
-    // Thời hạn mượn cố định (2, 5, hoặc 14 ngày)
+    // SỬA TẠI ĐÂY: Chỉ cho phép 7 hoặc 14 ngày
     loan_duration: { 
         type: DataTypes.INTEGER,
         allowNull: false,
         validate: {
-            isIn: [[2, 5, 14]] 
+            isIn: [[7, 14]] // Cập nhật từ [2, 5, 14] thành [7, 14]
         }
     },
     status: {
