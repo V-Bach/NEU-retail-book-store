@@ -10,9 +10,11 @@ const { sequelize } = require('./config/db.config');
 
 // IMPORT ROUTES
 const authRouter = require('./routes/auth.route'); 
-const bookRouter = require('./routes/book.route'); // <--- ĐÃ THÊM DÒNG NÀY ĐỂ KHẮC PHỤC LỖI
+const bookRouter = require('./routes/book.route'); 
 const reviewRoutes = require('./routes/review.route');
 const loanRoutes = require('./routes/loan.route');
+const cartRouter = require('./routes/cart.route'); 
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -20,7 +22,10 @@ const PORT = process.env.PORT || 5000;
 
 // --- 2. MIDDLEWARE ---
 // Cho phép Front-end gọi API từ cổng khác
-app.use(cors()); 
+app.use(cors({
+    origin: 'http://localhost:5173', // Cổng của Vite
+    credentials: true
+})); 
 // Để đọc dữ liệu JSON gửi từ Front-end
 app.use(express.json()); 
 
@@ -38,6 +43,9 @@ app.use('/api/reviews', reviewRoutes);
 
 // Route Loan (Mượn sách)
 app.use('/api/loans', loanRoutes);
+
+// Route gio sach
+app.use('/api/cart', cartRouter);
 
 
 // Route cơ bản (Luôn để ở cuối nhóm route để tránh xung đột)
