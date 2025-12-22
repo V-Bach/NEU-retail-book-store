@@ -1,8 +1,4 @@
-import {
-  createBrowserRouter,
-  RouterProvider,
-} from "react-router-dom";
-
+import { createBrowserRouter } from "react-router-dom";
 import App from "../App.jsx";
 import Home from "../pages/home/Home.jsx";
 import Login from "../components/Login.jsx";
@@ -18,8 +14,14 @@ const router = createBrowserRouter([
         element: <Home/>,
       },
       {
-        path: "orders",
-        element: <div>Orders</div>
+        //hiển thị thông báo nhắc nhở & sách đang mượn
+        path: "my-loans", 
+        element: <div>Trang Sách Đang Mượn & Nhắc Nhở</div> 
+      },
+      {
+        //giỏ hàng xác nhận mượn 7 hoặc 14 ngày
+        path: "cart",
+        element: <div>Trang Giỏ Hàng Mượn</div>
       },
       {
         path: "/about",
