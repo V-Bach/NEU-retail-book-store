@@ -7,7 +7,7 @@
     "trending": true,
     "coverImage": "econ-1.png",
     "oldPrice": 19.99,
-    "newPrice": 14.99
+    "newPrice": 0.00
   },
   {
     "_id": 2,
@@ -17,7 +17,7 @@
     "trending": false,
     "coverImage": "econ-2.png",
     "oldPrice": 15.99,
-    "newPrice": 9.99
+    "newPrice": 0.00
   },
   {
     "_id": 3,
@@ -27,7 +27,7 @@
     "trending": true,
     "coverImage": "econ-3.jpg",
     "oldPrice": 24.99,
-    "newPrice": 17.99
+    "newPrice": 0.00
   },
   {
     "_id": 4,
@@ -37,7 +37,7 @@
     "trending": false,
     "coverImage": "econ-4.png",
     "oldPrice": 39.99,
-    "newPrice": 32.99
+    "newPrice": 0.00
   },
   {
     "_id": 5,
@@ -47,7 +47,7 @@
     "trending": true,
     "coverImage": "econ-5.png",
     "oldPrice": 28.99,
-    "newPrice": 21.99
+    "newPrice": 0.00
   },
   {
     "_id": 6,
@@ -57,7 +57,7 @@
     "trending": true,
     "coverImage": "math-1.png",
     "oldPrice": 25.99,
-    "newPrice": 18.99
+    "newPrice": 0.00
   },
   {
     "_id": 7,
@@ -67,7 +67,7 @@
     "trending": false,
     "coverImage": "math-2.jpg",
     "oldPrice": 16.99,
-    "newPrice": 12.99
+    "newPrice": 0.00
   },
   {
     "_id": 8,
@@ -77,7 +77,7 @@
     "trending": true,
     "coverImage": "math-3.jpg",
     "oldPrice": 27.99,
-    "newPrice": 20.99
+    "newPrice": 0.00
   },
   {
     "_id": 9,
@@ -87,7 +87,7 @@
     "trending": false,
     "coverImage": "math-4.jpg",
     "oldPrice": 14.99,
-    "newPrice": 10.99
+    "newPrice": 0.00
   },
   {
     "_id": 10,
@@ -97,7 +97,7 @@
     "trending": false,
     "coverImage": "math-5.jpg",
     "oldPrice": 20.99,
-    "newPrice": 15.99
+    "newPrice": 0.00
   },
   {
     "_id": 11,
@@ -107,7 +107,7 @@
     "trending": true,
     "coverImage": "soc-1.jpg",
     "oldPrice": 29.99,
-    "newPrice": 22.99
+    "newPrice": 0.00
   },
   {
     "_id": 12,
@@ -117,7 +117,7 @@
     "trending": true,
     "coverImage": "soc-2.jpg",
     "oldPrice": 21.99,
-    "newPrice": 15.99
+    "newPrice": 0.00
   },
   {
     "_id": 13,
@@ -127,7 +127,7 @@
     "trending": false,
     "coverImage": "soc-3.jpg",
     "oldPrice": 18.99,
-    "newPrice": 13.99
+    "newPrice": 0.00
   },
   {
     "_id": 14,
@@ -137,7 +137,7 @@
     "trending": true,
     "coverImage": "soc-4.jpg",
     "oldPrice": 22.99,
-    "newPrice": 16.99
+    "newPrice": 0.00
   },
   {
     "_id": 15,
@@ -147,7 +147,7 @@
     "trending": false,
     "coverImage": "soc-5.jpg",
     "oldPrice": 23.99,
-    "newPrice": 18.99
+    "newPrice": 0.00
   },
   {
     "_id": 16,
@@ -157,7 +157,7 @@
     "trending": true,
     "coverImage": "tech-1.jpg",
     "oldPrice": 45.99,
-    "newPrice": 35.99
+    "newPrice": 0.00
   },
   {
     "_id": 17,
@@ -167,7 +167,7 @@
     "trending": true,
     "coverImage": "tech-2.jpg",
     "oldPrice": 32.50,
-    "newPrice": 24.50
+    "newPrice": 0.00
   },
   {
     "_id": 18,
@@ -177,7 +177,7 @@
     "trending": false,
     "coverImage": "tech-3.jpg",
     "oldPrice": 49.99,
-    "newPrice": 39.99
+    "newPrice": 0.00
   },
   {
     "_id": 19,
@@ -187,7 +187,7 @@
     "trending": true,
     "coverImage": "tech-4.jpg",
     "oldPrice": 35.00,
-    "newPrice": 28.00
+    "newPrice": 0.00
   },
   {
     "_id": 20,
@@ -197,6 +197,6 @@
     "trending": true,
     "coverImage": "tech-5.jpg",
     "oldPrice": 55.00,
-    "newPrice": 45.00
+    "newPrice": 0.00
   }
 ]

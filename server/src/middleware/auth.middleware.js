@@ -6,7 +6,8 @@ if(!JWT_SECRET) {
 }
 
 exports.authenticate = (req, res, next) => {
-    const authHeader = req.headers.authorizaiton;
+    // SỬA LỖI: authorization (không phải authorizaiton)
+    const authHeader = req.headers.authorization; 
 
     if(!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ message: 'authorization token not provided' });
@@ -24,7 +25,8 @@ exports.authenticate = (req, res, next) => {
 };
 
 exports.isAdmin = (req, res, next) => {
-    if(req.user && req.user.role == 'admin') {
+    // Kiểm tra role chính xác
+    if(req.user && req.user.role === 'admin') {
         next();
     } else {
         return res.status(403).json({ message: 'access denied: requires administrator privileges' });

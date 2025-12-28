@@ -9,11 +9,11 @@ export const Banner = () => {
         </div>
 
         <div className='md:w-1/2 w-full'>
-            <h1 className='md:text-5xl text-2xl font-medium mb-7'> Mới Ra Lò </h1>
+            <h1 className='md:text-5xl text-2xl font-medium mb-7'> Release This Week </h1>
             <p className='mb-10'> 
-                Đã đến lúc làm mới reading list với 3 “trụ cột” toán–công nghệ không thể thiếu: Linear Algebra, Discrete Mathematics và Numerical Methods — nền tảng từ tư duy cấu trúc, logic rời rạc đến tính toán số, học là dùng được liền cho Data, AI và Engineering.
+                It’s time to refresh your reading list with three indispensable math–tech pillars: Linear Algebra, Discrete Mathematics, and Numerical Methods — foundations that span structured thinking, discrete logic, and numerical computation, and are immediately applicable to Data, AI, and Engineering
             </p>
-            <button className='btn-primary'> Đăng ký ngay </button>
+            <button className='btn-primary'> Subscribe Now! </button>
         </div>
 
         

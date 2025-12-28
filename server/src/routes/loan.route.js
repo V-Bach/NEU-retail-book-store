@@ -19,5 +19,6 @@ router.get('/', authenticate, loanController.getActiveLoans);
 // PUT /api/loans/return/:loanId: Đánh dấu sách đã trả và cập nhật kho
 router.put('/return/:loanId', authenticate, loanController.returnLoan); 
 
+router.get('/history', authenticate, loanController.getLoanHistory);
 
 module.exports = router;

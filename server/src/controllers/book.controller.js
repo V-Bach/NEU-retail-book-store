@@ -296,11 +296,6 @@ exports.getExternalBookById = async (req, res) => {
     }
 };
 
-/**
- * Cập nhật thông tin Bán lẻ (Giá và Tồn kho) của sách trong Local DB.
- * PUT /api/books/:id (CHỈ ADMIN)
- */
-
 exports.updateBook = async (req, res) => {
     const { id } = req.params;
     const { price, stock_quantity, is_available } = req.body;
@@ -325,22 +320,17 @@ exports.updateBook = async (req, res) => {
             return res.status(404).json({ message: `Book with id ${id} not found.` });
         }
 
-        const updateBook = await Book.findByPk(id);
+        const updatedBook = await Book.findByPk(id);
 
         res.status(200).json({
             message: 'Book inventory and price updated successfully',
-            book: updateBook
+            book: updatedBook
         });
     } catch(error) {
         console.error('Error updating book: ', error);
         res.status(500).json({ message: 'Server error: could not update book' });
     }
 };
-
-/**
- * Xóa sách khỏi Local DB (Đã ngừng kinh doanh / hết hàng vĩnh viễn).
- * DELETE /api/books/:id (CHỈ ADMIN)
- */
 
 exports.deleteBook = async (req, res) => {
     const { id } = req.params;
@@ -358,5 +348,54 @@ exports.deleteBook = async (req, res) => {
     } catch (error) {
         console.error('Error deleting book: ', error);
         res.status(500).json({ message: 'Server error: could not delete book' });
+    }
+};
+
+/**
+ * Đồng bộ sách từ Google API vào Local DB
+ */
+exports.syncExternalBook = async (req, res) => {
+    const { title, description, cover_image_url, category } = req.body;
+
+    if (!title) {
+        return res.status(400).json({ message: 'Tiêu đề sách là bắt buộc.' });
+    }
+
+    const t = await sequelize.transaction();
+
+    try {
+        // 1. Tìm hoặc tạo Category "General" hoặc category từ API
+        let [categoryObj] = await Category.findOrCreate({
+            where: { name: category || 'General' },
+            transaction: t
+        });
+
+        // 2. Kiểm tra xem sách tiêu đề này đã có trong database chưa
+        let book = await Book.findOne({ where: { title: title }, transaction: t });
+
+        if (!book) {
+            // 3. Nếu chưa có, tạo sách mới để cấp ID Số (INT)
+            book = await Book.create({
+                title,
+                description: description || "Thông tin đang cập nhật",
+                cover_image_url: cover_image_url || "",
+                price: 0,
+                stock_quantity: 10,
+                category_id: categoryObj.category_id,
+                is_available: true
+            }, { transaction: t });
+        }
+
+        await t.commit();
+        
+        // Trả về ID thật kiểu Số để Frontend sử dụng
+        res.status(200).json({
+            message: 'Đồng bộ thành công',
+            book_id: book.book_id 
+        });
+    } catch (error) {
+        if (t) await t.rollback();
+        console.error('Lỗi syncExternalBook:', error);
+        res.status(500).json({ message: 'Lỗi server khi đăng ký sách ngoại.' });
     }
 };

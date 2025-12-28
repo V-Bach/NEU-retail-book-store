@@ -6,89 +6,81 @@ const moment = require('moment');
 const getUserId = (req) => req.user.id;
 
 /**
- * 1. MƯỢN SÁCH (CHECKOUT) - Giữ nguyên logic 7/14 ngày
+ * 1. MƯỢN SÁCH (CHECKOUT)
+ * Xử lý danh sách bookIds gửi từ CheckoutPage
  */
 exports.checkoutLoan = async (req, res) => {
     const userId = getUserId(req);
-    const { duration } = req.body; 
+    const { bookIds, duration } = req.body; 
 
-    if (![7, 14].includes(duration)) {
-        return res.status(400).json({ 
-            message: `Thời hạn mượn không hợp lệ. Bạn chỉ có thể chọn 7 hoặc 14 ngày.` 
-        });
+    if (!bookIds || !Array.isArray(bookIds) || bookIds.length === 0) {
+        return res.status(400).json({ message: 'Danh sách sách mượn không hợp lệ.' });
+    }
+
+    if (![7, 14].includes(Number(duration))) {
+        return res.status(400).json({ message: 'Thời hạn mượn không hợp lệ (7 hoặc 14 ngày).' });
     }
 
     const t = await sequelize.transaction();
 
     try {
-        const itemsToLoan = await CartItem.findAll({
-            where: { user_id: userId, is_borrowing: true },
-            include: [{ model: Book, as: 'book', attributes: ['book_id', 'stock_quantity'] }],
-            transaction: t
-        });
+        const loanRecords = [];
+        const dueDate = moment().add(duration, 'days').format('YYYY-MM-DD');
+        const today = moment().format('YYYY-MM-DD');
 
-        if (itemsToLoan.length === 0) {
-            await t.rollback();
-            return res.status(400).json({ message: 'Giỏ mượn của bạn đang trống.' });
+        for (const bookId of bookIds) {
+            const book = await Book.findByPk(bookId, { transaction: t });
+            
+            if (!book) {
+                await t.rollback();
+                return res.status(404).json({ message: `Không tìm thấy sách ID: ${bookId}` });
+            }
+
+            if (book.stock_quantity <= 0) {
+                 await t.rollback();
+                 return res.status(400).json({ message: `Sách "${book.title}" đã hết hàng.` });
+            }
+
+            loanRecords.push({
+                user_id: userId,
+                book_id: bookId,
+                loan_duration: duration,
+                borrow_date: today,
+                due_date: dueDate,
+                status: 'active'
+            });
+
+            // Giảm kho
+            await book.decrement('stock_quantity', { by: 1, transaction: t });
         }
 
-        const loanRecords = [];
-        const booksToUpdateStock = [];
-        const dueDate = moment().add(duration, 'days').format('YYYY-MM-DD');
+        // Tạo bản ghi mượn
+        await Loan.bulkCreate(loanRecords, { transaction: t });
 
-        for (const item of itemsToLoan) {
-            if (item.book.stock_quantity < item.quantity) {
-                 await t.rollback();
-                 return res.status(400).json({ message: `Sách ${item.book_id} đã hết hàng.` });
-            }
-            
-            for (let i = 0; i < item.quantity; i++) {
-                loanRecords.push({
+        // SỬA LẠI: Chỉ xóa các mục trong giỏ hàng đang ở trạng thái mượn (is_borrowing: true)
+        // Điều này giúp giữ lại các mục "mua" nếu người dùng có cả hai loại trong giỏ
+        if (CartItem) {
+            await CartItem.destroy({
+                where: { 
                     user_id: userId,
-                    book_id: item.book_id,
-                    loan_duration: duration,
-                    borrow_date: moment().format('YYYY-MM-DD'),
-                    due_date: dueDate,
-                    status: 'active'
-                });
-            }
-            
-            booksToUpdateStock.push({
-                book_id: item.book_id,
-                quantityChange: item.quantity
+                    book_id: { [Op.in]: bookIds }, // Chỉ xóa những sách vừa mượn xong
+                    is_borrowing: true // Khớp với trường trong model CartItem.js
+                },
+                transaction: t
             });
         }
 
-        await Loan.bulkCreate(loanRecords, { transaction: t });
-
-        for (const update of booksToUpdateStock) {
-            await Book.increment(
-                { stock_quantity: -update.quantityChange },
-                { where: { book_id: update.book_id }, transaction: t }
-            );
-        }
-
-        await CartItem.destroy({
-            where: { user_id: userId, is_borrowing: true },
-            transaction: t
-        });
-
         await t.commit();
-
-        res.status(201).json({
-            message: 'Xác nhận mượn sách thành công.',
-            due_date: dueDate
-        });
+        res.status(201).json({ message: 'Thành công', due_date: dueDate });
 
     } catch (error) {
-        await t.rollback();
+        if (t) await t.rollback();
+        console.error("Lỗi tại checkoutLoan:", error);
         res.status(500).json({ message: 'Lỗi server khi mượn sách.' });
     }
 };
-
 /**
- * 2. NHẮC NHỞ CHỦ ĐỘNG (NHÓM THEO LẦN MƯỢN)
- * Tập trung vào cảnh báo thời gian, KHÔNG phí phạt.
+ * 2. NHẮC NHỞ CHỦ ĐỘNG
  */
 exports.getLoanReminders = async (req, res) => {
     try {
@@ -96,7 +88,10 @@ exports.getLoanReminders = async (req, res) => {
         const today = moment().startOf('day');
 
         const loans = await Loan.findAll({
-            where: { user_id: userId, status: { [Op.in]: ['active', 'overdue'] } },
+            where: { 
+                user_id: userId, 
+                status: { [Op.in]: ['active', 'overdue'] } 
+            },
             include: [{ model: Book, as: 'borrowed_book', attributes: ['title'] }]
         });
         
@@ -107,7 +102,6 @@ exports.getLoanReminders = async (req, res) => {
                 const dueDate = moment(loan.due_date).startOf('day');
                 const daysRemaining = dueDate.diff(today, 'days');
 
-                // Logic cảnh báo theo mức độ
                 let alertType = 'NORMAL';
                 let message = `Còn ${daysRemaining} ngày để trả sách.`;
 
@@ -116,7 +110,7 @@ exports.getLoanReminders = async (req, res) => {
                     message = `Đã quá hạn trả ${Math.abs(daysRemaining)} ngày! Hãy trả sớm nhé.`;
                 } else if (daysRemaining === 0) {
                     alertType = 'WARNING';
-                    message = `Sắp đến hạn ròiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii`;
+                    message = `Hôm nay là hạn trả sách cuối cùng của bạn!`;
                 } else if (daysRemaining <= 2) {
                     alertType = 'URGENT';
                     message = `Sắp đến hạn! Bạn chỉ còn ${daysRemaining} ngày.`;
@@ -131,7 +125,9 @@ exports.getLoanReminders = async (req, res) => {
                     display_message: message
                 };
             }
-            acc[batchKey].books.push(loan.borrowed_book.title);
+            if (loan.borrowed_book) {
+                acc[batchKey].books.push(loan.borrowed_book.title);
+            }
             return acc;
         }, {});
 
@@ -139,13 +135,13 @@ exports.getLoanReminders = async (req, res) => {
             reminders: Object.values(reminders).sort((a, b) => a.days_remaining - b.days_remaining)
         });
     } catch (error) {
+        console.error("Lỗi getLoanReminders:", error);
         res.status(500).json({ message: 'Lỗi tính toán nhắc nhở.' });
     }
 };
 
 /**
  * 3. TRẢ SÁCH (RETURN LOAN)
- * Chỉ cập nhật trạng thái và kho, KHÔNG tính phí phạt.
  */
 exports.returnLoan = async (req, res) => {
     const userId = getUserId(req);
@@ -155,7 +151,8 @@ exports.returnLoan = async (req, res) => {
     const t = await sequelize.transaction();
     try {
         const loan = await Loan.findOne({
-            where: { loan_id: loanId, user_id: userId }
+            where: { loan_id: loanId, user_id: userId },
+            transaction: t
         });
 
         if (!loan || loan.status === 'returned') {
@@ -163,8 +160,13 @@ exports.returnLoan = async (req, res) => {
             return res.status(400).json({ message: 'Khoản mượn không tồn tại hoặc đã được trả.' });
         }
 
-        await loan.update({ status: 'returned', return_date: today }, { transaction: t });
+        // Cập nhật trạng thái mượn
+        await loan.update({ 
+            status: 'returned', 
+            return_date: today 
+        }, { transaction: t });
 
+        // Tăng lại số lượng trong kho
         await Book.increment(
             { stock_quantity: 1 },
             { where: { book_id: loan.book_id }, transaction: t }
@@ -173,24 +175,52 @@ exports.returnLoan = async (req, res) => {
         await t.commit();
         res.status(200).json({ message: 'Đã trả sách thành công. Cảm ơn bạn!' });
     } catch (error) {
-        await t.rollback();
+        if (t) await t.rollback();
+        console.error("Lỗi returnLoan:", error);
         res.status(500).json({ message: 'Lỗi khi trả sách.' });
     }
 };
 
 /**
- * 4. XEM DANH SÁCH 
+ * 4. XEM DANH SÁCH MƯỢN ACTIVE
  */
 exports.getActiveLoans = async (req, res) => {
     try {
         const userId = getUserId(req);
         const activeLoans = await Loan.findAll({
-            where: { user_id: userId, status: { [Op.in]: ['active', 'overdue'] } },
-            include: [{ model: Book, as: 'borrowed_book', attributes: ['title', 'book_id'] }],
+            where: { 
+                user_id: userId, 
+                status: { [Op.in]: ['active', 'overdue'] } 
+            },
+            include: [{ 
+                model: Book, 
+                as: 'borrowed_book', 
+                attributes: ['title', 'book_id', 'cover_image_url'] 
+            }],
             order: [['due_date', 'ASC']]
         });
         res.status(200).json({ loans: activeLoans });
     } catch (error) {
+        console.error("Lỗi getActiveLoans:", error);
         res.status(500).json({ message: 'Lỗi lấy danh sách mượn.' });
+    }
+};
+
+exports.getLoanHistory = async (req, res) => {
+    try {
+        const userId = req.user.id; // Lấy ID từ middleware authenticate
+        const history = await Loan.findAll({
+            where: { user_id: userId },
+            include: [{ 
+                model: Book, 
+                as: 'borrowed_book', 
+                attributes: ['title', 'cover_image_url', 'book_id'] 
+            }],
+            order: [['createdAt', 'DESC']] // Đơn mới nhất hiện lên đầu
+        });
+        res.status(200).json({ history });
+    } catch (error) {
+        console.error("Lỗi getLoanHistory:", error);
+        res.status(500).json({ message: 'Lỗi khi lấy lịch sử mượn sách.' });
     }
 };

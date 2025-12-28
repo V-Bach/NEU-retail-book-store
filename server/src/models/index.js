@@ -8,6 +8,7 @@ const Category = require('./Category');
 const Author = require('./Author');
 const Review = require('./Review');
 const Loan = require('./Loan');
+const CartItem = require('./CartItem');
 
 // THIẾT LẬP QUAN HỆ (ASSOCIATIONS)
 
@@ -32,7 +33,10 @@ User.hasMany(Review, { foreignKey: 'user_id', as: 'reviews' });
 Review.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
 
-
+User.hasMany(CartItem, { foreignKey: 'user_id', as: 'cart_items' });
+CartItem.belongsTo(User, { foreignKey: 'user_id' });
+Book.hasMany(CartItem, { foreignKey: 'book_id' });
+CartItem.belongsTo(Book, { foreignKey: 'book_id', as: 'book' });
 
 // --- QUAN HỆ MƯỢN SÁCH (Loan) ---
 // User <-> Loan (1:N)
@@ -51,4 +55,5 @@ module.exports = {
     Author,
     Review,
     Loan,
+    CartItem,
 };
