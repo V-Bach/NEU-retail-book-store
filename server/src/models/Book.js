@@ -24,7 +24,7 @@ const Book = sequelize.define('Book', {
         defaultValue: 0
     },
     publication_date: {
-        type: DataTypes.DATEONLY // Chỉ lưu ngày tháng
+        type: DataTypes.DATEONLY 
     },
     publisher: {
         type: DataTypes.STRING(150)

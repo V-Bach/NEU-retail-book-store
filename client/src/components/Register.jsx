@@ -17,13 +17,11 @@ const Register = () => {
   
     const onSubmit = async (data) => {
         try {
-            // Gửi dữ liệu đăng ký tới Backend
-            // Lưu ý: Backend của bạn có thể cần thêm trường 'username' 
-            // Nếu model User yêu cầu username, hãy bổ sung input vào form
+
             const response = await api.post('/auth/register', {
                 email: data.email,
                 password: data.password,
-                username: data.email.split('@')[0] // Tạm lấy phần trước @ làm username nếu thiếu
+                username: data.email.split('@')[0] 
             });
 
             if (response.status === 201 || response.status === 200) {

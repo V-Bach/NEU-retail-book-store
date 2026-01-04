@@ -18,7 +18,7 @@ const SearchPage = () => {
                 const rawData = response.data.results || [];
                 
                 const formattedData = rawData.map((item, index) => {
-                // 1. Tìm ID từ mọi nguồn có thể
+                // Tìm ID từ mọi nguồn có thể
                 // Nếu không có bất kỳ ID nào, dùng index làm ID tạm thời để không bị đứng máy
                 const id = item.id || item.googleId || item.book_id || `temp-id-${index}`;
     

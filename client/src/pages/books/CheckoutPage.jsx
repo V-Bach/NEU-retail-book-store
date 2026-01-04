@@ -11,17 +11,17 @@ const CheckoutPage = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     
-    // Khởi tạo react-hook-form
+
     const { register, handleSubmit, formState: { errors } } = useForm();
     
-    // State quản lý checkbox và thời hạn mượn (Backend yêu cầu 7 hoặc 14)
+
     const [isChecked, setIschecked] = useState(false);
     const [duration, setDuration] = useState(14); 
 
-    // Tính tổng giá trị sách dựa trên thuộc tính price hoặc newPrice
+
     const totalPrice = cartItems.reduce((acc, item) => acc + Number(item.price || item.newPrice || 0), 0).toFixed(2);
     
-    // Giả định User đã login, email sẽ được lấy từ localStorage hoặc state auth
+
     const currentUser = JSON.parse(localStorage.getItem('user')) || { email: "guest@example.com" };
 
     const onSubmit = async (data) => {
@@ -30,10 +30,10 @@ const CheckoutPage = () => {
             return;
         }
 
-        // Cấu trúc dữ liệu gửi lên khớp với hàm checkoutLoan của bạn
+
         const loanPayload = {
             bookIds: cartItems.map(item => Number(item.book_id || item._id)),
-            duration: Number(duration), // 7 hoặc 14
+            duration: Number(duration), 
             name: data.name,
             phone: data.phone
         }
@@ -41,7 +41,7 @@ const CheckoutPage = () => {
         try {
             Swal.fire({ title: 'Đang xử lý...', didOpen: () => { Swal.showLoading(); } });
             
-            // Gọi đến API mượn sách đã xác thực
+
             const response = await api.post("/loans/checkout", loanPayload); 
 
             Swal.fire({ 
@@ -50,7 +50,7 @@ const CheckoutPage = () => {
                 icon: "success" 
             });
 
-            // Xóa giỏ hàng và về trang lịch sử mượn
+
             dispatch(clearCart());
             navigate("/orders"); 
 

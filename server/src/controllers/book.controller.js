@@ -1,11 +1,8 @@
-// server/src/controllers/book.controller.js
-
 const { Book, Category, Author } = require('../models/index');
 const { sequelize } = require('../config/db.config'); // Dùng cho transaction
 const googleBooksService = require('../services/googleBooks.service');
 
 exports.createBook = async (req, res) => {
-    // 1. Tách mảng authors ID và Book Data
     const { authors, ...bookData } = req.body;
     
     if (!bookData.title || !bookData.price || !bookData.category_id) {
@@ -14,21 +11,20 @@ exports.createBook = async (req, res) => {
         });
     }
 
-    const t = await sequelize.transaction(); // Bắt đầu transaction
+    const t = await sequelize.transaction(); 
 
     try {
-        // 3. TẠO SÁCH (Bảng Books)
+        
         const newBook = await Book.create(bookData, { transaction: t });
         
-        // 4. XỬ LÝ QUAN HỆ TÁC GIẢ (N:M)
+        
         if (authors && authors.length > 0) {
-            // Kiểm tra tất cả các ID tác giả có tồn tại không
             const existingAuthors = await Author.findAll({
                 where: { author_id: authors },
                 transaction: t
             });
 
-            // Nếu số lượng tác giả hợp lệ không khớp với số lượng ID gửi lên, rollback
+            
             if (existingAuthors.length !== authors.length) {
                 await t.rollback();
                 return res.status(400).json({ 
@@ -36,11 +32,10 @@ exports.createBook = async (req, res) => {
                 });
             }
 
-            // Thiết lập quan hệ (setAuthors là Sequelize Magic Method)
             await newBook.setAuthors(existingAuthors, { transaction: t });
         }
 
-        await t.commit(); // Cam kết giao dịch
+        await t.commit(); 
 
         // 5. Trả về kết quả
         res.status(201).json({
@@ -48,7 +43,7 @@ exports.createBook = async (req, res) => {
             book: newBook 
         });
     } catch (error) {
-        await t.rollback(); // Hoàn tác nếu có lỗi
+        await t.rollback(); 
         console.error('Error creating book:', error);
         res.status(500).json({ message: 'Server error: could not create book.' });
     }
@@ -56,7 +51,7 @@ exports.createBook = async (req, res) => {
 
 exports.getAllBooks = async (req, res) => {
     try {
-        // Sử dụng phương thức findAll() của Sequelize để lấy tất cả bản ghi từ bảng Books
+        
         const books = await Book.findAll({
             include: [
                 {
@@ -90,11 +85,11 @@ exports.getAllBooks = async (req, res) => {
 };
 
 exports.getBookById = async (req, res) => {
-    // 1. Lấy ID từ tham số URL
+    
     const { id } = req.params;
 
     try {
-        // 2. Sử dụng findByPk (Find by Primary Key)
+        
         const book = await Book.findByPk(id, {
             include: [
                 {
@@ -111,12 +106,12 @@ exports.getBookById = async (req, res) => {
             ]
         });
 
-        // 3. Kiểm tra kết quả
+       
         if (!book) {
             return res.status(404).json({ message: `Book with ID ${id} not found.` });
         }
 
-        // 4. Trả về chi tiết sách
+        
         res.status(200).json({ book });
 
     } catch (error) {
@@ -144,11 +139,7 @@ exports.searchExternalBooks = async (req, res) => {
     }
 };
 
-// ========== CÁC FUNCTION MỚI CHO TÌM KIẾM NÂNG CAO ==========
 
-/**
- * Tìm kiếm nâng cao từ Google Books API
- */
 exports.advancedExternalSearch = async (req, res) => {
     const {
         title,
@@ -163,7 +154,6 @@ exports.advancedExternalSearch = async (req, res) => {
         lang = 'en'
     } = req.query;
 
-    // Xây dựng params object
     const searchParams = {
         title,
         author,
@@ -176,14 +166,12 @@ exports.advancedExternalSearch = async (req, res) => {
         lang
     };
 
-    // Loại bỏ các trường undefined
     Object.keys(searchParams).forEach(key => {
         if (searchParams[key] === undefined) {
             delete searchParams[key];
         }
     });
 
-    // Nếu không có tham số nào, trả về lỗi
     if (Object.keys(searchParams).length === 0) {
         return res.status(400).json({
             message: 'At least one search parameter is required',
@@ -207,9 +195,7 @@ exports.advancedExternalSearch = async (req, res) => {
     }
 };
 
-/**
- * Tìm kiếm sách theo tác giả từ Google Books API
- */
+
 exports.searchExternalByAuthor = async (req, res) => {
     const { author, maxResults = 15 } = req.query;
     
@@ -235,9 +221,7 @@ exports.searchExternalByAuthor = async (req, res) => {
     }
 };
 
-/**
- * Tìm kiếm sách theo ISBN từ Google Books API
- */
+
 exports.searchExternalByISBN = async (req, res) => {
     const { isbn } = req.query;
     
@@ -263,9 +247,7 @@ exports.searchExternalByISBN = async (req, res) => {
     }
 };
 
-/**
- * Lấy thông tin sách chi tiết từ Google Books bằng ID
- */
+
 exports.getExternalBookById = async (req, res) => {
     const { googleId } = req.params;
     
@@ -351,9 +333,7 @@ exports.deleteBook = async (req, res) => {
     }
 };
 
-/**
- * Đồng bộ sách từ Google API vào Local DB
- */
+
 exports.syncExternalBook = async (req, res) => {
     const { title, description, cover_image_url, category } = req.body;
 
@@ -364,17 +344,17 @@ exports.syncExternalBook = async (req, res) => {
     const t = await sequelize.transaction();
 
     try {
-        // 1. Tìm hoặc tạo Category "General" hoặc category từ API
+        // tìm hoặc tạo Category "General" hoặc category từ API
         let [categoryObj] = await Category.findOrCreate({
             where: { name: category || 'General' },
             transaction: t
         });
 
-        // 2. Kiểm tra xem sách tiêu đề này đã có trong database chưa
+        // kiểm tra xem sách tiêu đề này đã có trong database chưa
         let book = await Book.findOne({ where: { title: title }, transaction: t });
 
         if (!book) {
-            // 3. Nếu chưa có, tạo sách mới để cấp ID Số (INT)
+            // nếu chưa có, tạo sách mới để cấp ID Số (INT)
             book = await Book.create({
                 title,
                 description: description || "Thông tin đang cập nhật",
@@ -388,7 +368,6 @@ exports.syncExternalBook = async (req, res) => {
 
         await t.commit();
         
-        // Trả về ID thật kiểu Số để Frontend sử dụng
         res.status(200).json({
             message: 'Đồng bộ thành công',
             book_id: book.book_id 

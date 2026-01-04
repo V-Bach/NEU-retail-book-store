@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../utils/api';
-import Swal from 'sweetalert2'; // Đảm bảo bạn đã install thư viện này
+import Swal from 'sweetalert2'; 
 
 const OrderPage = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // --- HÀM TẢI DỮ LIỆU (Tách ra để có thể gọi lại nhiều lần) ---
     const fetchOrders = async () => {
         try {
-            const response = await api.get('/loans/history'); // Dùng route /history bạn vừa tạo ở Backend
+            const response = await api.get('/loans/history');
             const data = response.data?.history || response.data?.orders || [];
             setOrders(Array.isArray(data) ? data : []);
         } catch (err) {
@@ -24,7 +23,6 @@ const OrderPage = () => {
         fetchOrders();
     }, []);
 
-    // --- HÀM TRẢ SÁCH (Dòng code bạn đang thắc mắc nằm ở đây) ---
     const handleReturn = async (loanId) => {
         const result = await Swal.fire({
             title: 'Xác nhận trả sách?',
@@ -39,12 +37,10 @@ const OrderPage = () => {
 
         if (result.isConfirmed) {
             try {
-                // Gọi tới route PUT bạn đã viết ở Backend
                 await api.put(`/loans/return/${loanId}`); 
                 
                 await Swal.fire("Thành công!", "Sách đã được hoàn trả vào kho.", "success");
                 
-                // Sau khi trả xong, gọi lại hàm này để cập nhật danh sách ngay lập tức
                 fetchOrders(); 
             } catch (error) {
                 Swal.fire("Lỗi", "Không thể thực hiện trả sách.", "error");

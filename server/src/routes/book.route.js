@@ -3,10 +3,7 @@ const router = express.Router();
 const bookController = require('../controllers/book.controller');
 const { authenticate, isAdmin } = require('../middleware/auth.middleware'); 
 
-// Đảm bảo import bookController ở đầu file
 router.post('/external/sync', bookController.syncExternalBook);
-
-// --- CÁC ROUTE TÌM KIẾM API NGOÀI (Phải đặt TRÊN route /:id) ---
 
 // GET /api/books/external/search?q=query
 router.get('/external/search', bookController.searchExternalBooks);
@@ -23,16 +20,12 @@ router.get('/external/isbn', bookController.searchExternalByISBN);
 // GET /api/books/external/id/:googleId
 router.get('/external/id/:googleId', bookController.getExternalBookById);
 
-
-// --- CÁC ROUTE DATABASE NỘI BỘ ---
-
 // GET /api/books
 router.get('/', bookController.getAllBooks);
 
-// GET /api/books/:id (Bây giờ nó sẽ không bị tranh chấp với /external nữa)
+// GET /api/books/:id 
 router.get('/:id', bookController.getBookById);
 
-// --- CÁC ROUTE CẦN QUYỀN ADMIN ---
 
 router.post('/', authenticate, isAdmin, bookController.createBook); 
 router.put('/:id', authenticate, isAdmin, bookController.updateBook); 

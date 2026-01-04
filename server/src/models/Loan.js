@@ -28,12 +28,12 @@ const Loan = sequelize.define('Loan', {
         type: DataTypes.DATEONLY,
         allowNull: true 
     },
-    // SỬA TẠI ĐÂY: Chỉ cho phép 7 hoặc 14 ngày
+    //Chỉ cho phép 7 hoặc 14 ngày
     loan_duration: { 
         type: DataTypes.INTEGER,
         allowNull: false,
         validate: {
-            isIn: [[7, 14]] // Cập nhật từ [2, 5, 14] thành [7, 14]
+            isIn: [[7, 14]] 
         }
     },
     status: {

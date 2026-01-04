@@ -9,7 +9,6 @@ const SearchBooks = () => {
     const handleSearch = (e) => {
         e.preventDefault();
         if (!searchQuery.trim()) return;
-        // Chuyển hướng sang trang kết quả tìm kiếm với query parameter
         navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
     };
 

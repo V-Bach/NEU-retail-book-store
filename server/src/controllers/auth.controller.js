@@ -26,7 +26,7 @@ exports.register = async (req, res) => {
 
         const newUser = await User.create({
             email,
-            password, // Truyền vào trường VIRTUAL
+            password, 
             first_name,
             last_name,
             role

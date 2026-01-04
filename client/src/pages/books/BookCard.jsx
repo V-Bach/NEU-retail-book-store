@@ -9,7 +9,7 @@ import api from '../../utils/api';
 const BookCard = ({ book }) => {
     const dispatch = useDispatch();
 
-    // Lấy URL ảnh (Hàm getImgUrl mới sẽ lo việc xử lý sách thiếu ảnh)
+    // lấy URL ảnh (hàm getImgUrl mới sẽ lo việc xử lý sách thiếu ảnh)
     const finalSrc = getImgUrl(book?.cover_image_url || book?.image);
 
     const handleBorrowClick = async (currentBook) => {

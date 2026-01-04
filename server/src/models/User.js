@@ -21,7 +21,7 @@ const User = sequelize.define('User', {
     // CỘT THẬT: Lưu mật khẩu đã mã hóa
     password_hash: {
         type: DataTypes.STRING(255),
-        allowNull: true // Để true để Hook có thể điền giá trị sau
+        allowNull: true 
     },
     first_name: DataTypes.STRING(100),
     last_name: DataTypes.STRING(100),

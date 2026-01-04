@@ -1,14 +1,11 @@
 const { CartItem, Book } = require('../models/index');
 
-/**
- * THÊM VÀO GIỎ HÀNG (Mượn)
- */
 exports.addToCart = async (req, res) => {
     const userId = req.user.id;
-    const { book_id, quantity, is_borrowing } = req.body; // is_borrowing nhận true/false từ UI
+    const { book_id, quantity, is_borrowing } = req.body; 
 
     try {
-        // Kiểm tra xem đã có mục này trong giỏ với cùng trạng thái chưa
+       
         let item = await CartItem.findOne({
             where: { user_id: userId, book_id, is_borrowing }
         });
@@ -31,9 +28,7 @@ exports.addToCart = async (req, res) => {
     }
 };
 
-/**
- * XEM GIỎ HÀNG (Hiển thị tách biệt Mượn)
- */
+
 exports.getCart = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -42,7 +37,7 @@ exports.getCart = async (req, res) => {
             include: [{ model: Book, attributes: ['title', 'price', 'image'] }]
         });
         
-        // Phân loại để Front-end dễ hiển thị
+      
         const purchaseItems = items.filter(i => !i.is_borrowing);
         const borrowItems = items.filter(i => i.is_borrowing);
 

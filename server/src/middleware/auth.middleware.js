@@ -6,7 +6,6 @@ if(!JWT_SECRET) {
 }
 
 exports.authenticate = (req, res, next) => {
-    // SỬA LỖI: authorization (không phải authorizaiton)
     const authHeader = req.headers.authorization; 
 
     if(!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -25,7 +24,6 @@ exports.authenticate = (req, res, next) => {
 };
 
 exports.isAdmin = (req, res, next) => {
-    // Kiểm tra role chính xác
     if(req.user && req.user.role === 'admin') {
         next();
     } else {

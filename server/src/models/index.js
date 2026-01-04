@@ -1,6 +1,4 @@
-// server/src/models/index.js 
-
-const { sequelize } = require('../config/db.config'); // GIỮ LẠI ĐỂ THIẾT LẬP QUAN HỆ
+const { sequelize } = require('../config/db.config'); 
 
 const User = require('./User');
 const Book = require('./Book');
@@ -10,7 +8,6 @@ const Review = require('./Review');
 const Loan = require('./Loan');
 const CartItem = require('./CartItem');
 
-// THIẾT LẬP QUAN HỆ (ASSOCIATIONS)
 
 // Sách - Thể loại (1:N)
 Category.hasMany(Book, { foreignKey: 'category_id', as: 'books' });
@@ -38,7 +35,6 @@ CartItem.belongsTo(User, { foreignKey: 'user_id' });
 Book.hasMany(CartItem, { foreignKey: 'book_id' });
 CartItem.belongsTo(Book, { foreignKey: 'book_id', as: 'book' });
 
-// --- QUAN HỆ MƯỢN SÁCH (Loan) ---
 // User <-> Loan (1:N)
 User.hasMany(Loan, { foreignKey: 'user_id', as: 'loans' });
 Loan.belongsTo(User, { foreignKey: 'user_id', as: 'borrower' });

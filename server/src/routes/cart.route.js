@@ -5,6 +5,6 @@ const { authenticate } = require('../middleware/auth.middleware');
 
 router.post('/', authenticate, cartController.addToCart);
 router.get('/', authenticate, cartController.getCart);
-// Thêm các route xóa/sửa item nếu cần
+
 
 module.exports = router;

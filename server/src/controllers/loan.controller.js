@@ -5,10 +5,6 @@ const moment = require('moment');
 
 const getUserId = (req) => req.user.id;
 
-/**
- * 1. MƯỢN SÁCH (CHECKOUT)
- * Xử lý danh sách bookIds gửi từ CheckoutPage
- */
 exports.checkoutLoan = async (req, res) => {
     const userId = getUserId(req);
     const { bookIds, duration } = req.body; 
@@ -50,21 +46,20 @@ exports.checkoutLoan = async (req, res) => {
                 status: 'active'
             });
 
-            // Giảm kho
+            
             await book.decrement('stock_quantity', { by: 1, transaction: t });
         }
 
-        // Tạo bản ghi mượn
+    
         await Loan.bulkCreate(loanRecords, { transaction: t });
 
-        // SỬA LẠI: Chỉ xóa các mục trong giỏ hàng đang ở trạng thái mượn (is_borrowing: true)
-        // Điều này giúp giữ lại các mục "mua" nếu người dùng có cả hai loại trong giỏ
+
         if (CartItem) {
             await CartItem.destroy({
                 where: { 
                     user_id: userId,
-                    book_id: { [Op.in]: bookIds }, // Chỉ xóa những sách vừa mượn xong
-                    is_borrowing: true // Khớp với trường trong model CartItem.js
+                    book_id: { [Op.in]: bookIds },
+                    is_borrowing: true 
                 },
                 transaction: t
             });
@@ -79,9 +74,7 @@ exports.checkoutLoan = async (req, res) => {
         res.status(500).json({ message: 'Lỗi server khi mượn sách.' });
     }
 };
-/**
- * 2. NHẮC NHỞ CHỦ ĐỘNG
- */
+
 exports.getLoanReminders = async (req, res) => {
     try {
         const userId = getUserId(req);
@@ -140,9 +133,7 @@ exports.getLoanReminders = async (req, res) => {
     }
 };
 
-/**
- * 3. TRẢ SÁCH (RETURN LOAN)
- */
+
 exports.returnLoan = async (req, res) => {
     const userId = getUserId(req);
     const { loanId } = req.params;
@@ -160,13 +151,13 @@ exports.returnLoan = async (req, res) => {
             return res.status(400).json({ message: 'Khoản mượn không tồn tại hoặc đã được trả.' });
         }
 
-        // Cập nhật trạng thái mượn
+    
         await loan.update({ 
             status: 'returned', 
             return_date: today 
         }, { transaction: t });
 
-        // Tăng lại số lượng trong kho
+       
         await Book.increment(
             { stock_quantity: 1 },
             { where: { book_id: loan.book_id }, transaction: t }
@@ -181,9 +172,6 @@ exports.returnLoan = async (req, res) => {
     }
 };
 
-/**
- * 4. XEM DANH SÁCH MƯỢN ACTIVE
- */
 exports.getActiveLoans = async (req, res) => {
     try {
         const userId = getUserId(req);
@@ -208,7 +196,7 @@ exports.getActiveLoans = async (req, res) => {
 
 exports.getLoanHistory = async (req, res) => {
     try {
-        const userId = req.user.id; // Lấy ID từ middleware authenticate
+        const userId = req.user.id; 
         const history = await Loan.findAll({
             where: { user_id: userId },
             include: [{ 
@@ -216,7 +204,7 @@ exports.getLoanHistory = async (req, res) => {
                 as: 'borrowed_book', 
                 attributes: ['title', 'cover_image_url', 'book_id'] 
             }],
-            order: [['createdAt', 'DESC']] // Đơn mới nhất hiện lên đầu
+            order: [['createdAt', 'DESC']] 
         });
         res.status(200).json({ history });
     } catch (error) {

@@ -53,7 +53,7 @@ exports.getCombinedReviews = async (req, res) => {
             external_average_rating: externalBookData.averageRating,
             external_ratings_count: externalBookData.ratingsCount,
             
-            // Dữ liệu Local (User Reviews)
+       
             local_reviews_count: localReviews.length,
             local_reviews: localReviews,
         });

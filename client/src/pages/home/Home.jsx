@@ -8,14 +8,12 @@ import api from '../../utils/api'
 const Home = () => {
     const [reminders, setReminders] = useState([]);
 
-    // Logic lấy thông báo nhắc nhở từ Backend
     useEffect(() => {
         const fetchReminders = async () => {
             try {
                 const token = localStorage.getItem('token');
                 if (token) {
                     const response = await api.get('/loans/reminders');
-                    // Backend của bạn trả về mảng reminders đã được gộp nhóm
                     setReminders(response.data.reminders || []);
                 }
             } catch (error) {

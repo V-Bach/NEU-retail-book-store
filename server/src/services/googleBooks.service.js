@@ -1,18 +1,16 @@
-// server/src/services/googleBooks.service.js (ĐÃ CẬP NHẬT ĐẦY ĐỦ LOGIC TÌM KIẾM)
-
 const axios = require('axios');
 require('dotenv').config();
 
 const API_KEY = process.env.GOOGLE_BOOKS_API_KEY;
 const BASE_URL = 'https://www.googleapis.com/books/v1/volumes';
 
-// --- HÀM HỖ TRỢ CHUẨN HÓA DỮ LIỆU ---
+// chuan hoa du lieu
 const normalizeBookData = (item) => {
     const info = item.volumeInfo;
     const getIsbn13 = (arr) => arr ? arr.find(id => id.type === 'ISBN_13')?.identifier : null;
     
     return {
-        google_id: item.id, // RẤT QUAN TRỌNG: Lấy ID Google Books để lưu vào Review
+        google_id: item.id, 
         title: info.title || 'Untitled',
         authors_suggested: info.authors ? info.authors.join(', ') : 'Unknown Author',
         publisher: info.publisher || 'N/A',
@@ -22,13 +20,13 @@ const normalizeBookData = (item) => {
         isbn: getIsbn13(info.industryIdentifiers),
         category_name_suggested: info.categories ? info.categories[0] : 'General',
         
-        // Thêm trường cho Review/Rating (dùng cho tính năng Review)
+       
         averageRating: info.averageRating || null,
         ratingsCount: info.ratingsCount || 0,
     };
 };
 
-// --- HÀM GỌI API CHUNG ---
+
 const executeSearch = async (params) => {
     if (!API_KEY) {
         throw new Error('Google Books API Key is missing in .env');
@@ -48,17 +46,14 @@ const executeSearch = async (params) => {
     }
 };
 
-// --- 1. HÀM TÌM KIẾM CƠ BẢN (DÙNG CHO /external/search) ---
+
 exports.searchBooks = (query) => {
-    // Sử dụng hàm chung, query được Google tự động phân tích
     const params = { q: query, key: API_KEY, maxResults: 15, langRestrict: 'en' };
     return executeSearch(params);
 };
 
-// --- 2. HÀM TÌM KIẾM NÂNG CAO (DÙNG CHO /external/advanced) ---
-exports.advancedSearch = (searchParams, maxResults = 15) => {
-    // Xây dựng query string dựa trên các tham số nâng cao của Google API
-    
+
+exports.advancedSearch = (searchParams, maxResults = 15) => {   
     let q = '';
     if (searchParams.title) q += `intitle:${searchParams.title}+`;
     if (searchParams.author) q += `inauthor:${searchParams.author}+`;
@@ -67,7 +62,7 @@ exports.advancedSearch = (searchParams, maxResults = 15) => {
     if (searchParams.subject) q += `subject:${searchParams.subject}+`;
     if (searchParams.keyword) q += searchParams.keyword + '+';
 
-    q = q.slice(0, -1); // Loại bỏ dấu '+' cuối cùng
+    q = q.slice(0, -1); 
 
     const params = { 
         q: q, 
@@ -81,21 +76,21 @@ exports.advancedSearch = (searchParams, maxResults = 15) => {
     return executeSearch(params);
 };
 
-// --- 3. HÀM TÌM KIẾM THEO TÁC GIẢ (DÙNG CHO /external/author) ---
+
 exports.searchByAuthor = (author, maxResults = 15) => {
     // Sử dụng cú pháp tìm kiếm 'inauthor:'
     const params = { q: `inauthor:${author}`, key: API_KEY, maxResults, langRestrict: 'en' };
     return executeSearch(params);
 };
 
-// --- 4. HÀM TÌM KIẾM THEO ISBN (DÙNG CHO /external/isbn) ---
+
 exports.searchByISBN = (isbn) => {
     // Sử dụng cú pháp tìm kiếm 'isbn:'
     const params = { q: `isbn:${isbn}`, key: API_KEY, maxResults: 1 };
     return executeSearch(params);
 };
 
-// --- 5. HÀM LẤY CHI TIẾT BẰNG GOOGLE ID (DÙNG CHO /external/id/:googleId VÀ TÍNH NĂNG REVIEW) ---
+
 exports.getBookByGoogleId = async (googleId) => {
     if (!API_KEY) {
         throw new Error('Google Books API Key is missing in .env');
@@ -107,10 +102,10 @@ exports.getBookByGoogleId = async (googleId) => {
         });
 
         if (!response.data || response.data.error) {
-            return null; // Không tìm thấy sách
+            return null; 
         }
 
-        // Trả về dữ liệu chi tiết đã chuẩn hóa
+        
         return normalizeBookData(response.data);
 
     } catch (error) {

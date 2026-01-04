@@ -11,7 +11,7 @@ const MOCK_BOOKS = [
         book_id: 1,
         title: "Calculus: Early Transcendentals",
         category: "Maths",
-        cover_image_url: "https://m.media-amazon.com/images/I/91D9P9T87SL.jpg",
+        cover_image_url: "tech-5.jpg",
         description: "Cuốn sách giáo khoa kinh điển về giải tích cho sinh viên đại học.",
         price: 0,
         stock_quantity: 10
@@ -20,7 +20,7 @@ const MOCK_BOOKS = [
         book_id: 2,
         title: "Linear Algebra and Its Applications",
         category: "Maths",
-        cover_image_url: "https://m.media-amazon.com/images/I/81B43S3WstL._AC_UF1000,1000_QL80_.jpg",
+        cover_image_url: "tech-3.jpg",
         description: "Kiến thức nền tảng về đại số tuyến tính trong khoa học dữ liệu.",
         price: 0,
         stock_quantity: 5
@@ -29,7 +29,7 @@ const MOCK_BOOKS = [
         book_id: 3,
         title: "React Key Concepts",
         category: "Technology",
-        cover_image_url: "https://m.media-amazon.com/images/I/71uM6K+-9ML._AC_UF1000,1000_QL80_.jpg",
+        cover_image_url: "math-5.jpg",
         description: "Học cách xây dựng ứng dụng web hiện đại với React.",
         price: 0,
         stock_quantity: 15
@@ -46,9 +46,8 @@ const MOCK_BOOKS = [
 ];
 
 const TopSeller = () => {
-    // Khởi tạo state bằng dữ liệu tĩnh thay vì mảng rỗng
     const [books, setBooks] = useState(MOCK_BOOKS);
-    const [loading, setLoading] = useState(false); // Tắt loading để hiện ngay
+    const [loading, setLoading] = useState(false); 
 
     const getBooksByCat = (catName) => {
         return books.filter(book => {
