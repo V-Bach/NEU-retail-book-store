@@ -1,8 +1,8 @@
-# 📚 NEU Retail Book Store - Library Management System
+# NEU Retail Book Store - Library Management System
 
 A modern full-stack web application designed for a seamless book borrowing experience. This system integrates the Google Books API with a local database to manage inventory, user loans, and return histories.
 
-## 🚀 Key Features
+## Key Features
 
 * **Hybrid Book Sourcing:** Explore books from both the local database and the external Google Books API.
 * **Seamless Syncing:** Automatically synchronizes external API books into the local MySQL database upon borrowing to ensure data integrity.
@@ -10,7 +10,7 @@ A modern full-stack web application designed for a seamless book borrowing exper
 * **Loan Management:** Users can track their active loans, view return deadlines, and return books directly through their profile.
 * **Automated Stock Control:** Real-time stock updates (increment/decrement) during borrow and return actions.
 
-## 🛠 Tech Stack
+## Tech Stack
 
 ### Frontend:
 
@@ -25,7 +25,7 @@ A modern full-stack web application designed for a seamless book borrowing exper
 * **JWT (JSON Web Token)** for secure user authentication and route protection.
 * **Moment.js** for precise date calculations regarding loan deadlines.
 
-## 📦 Project Structure
+## Project Structure
 
 ```text
 ├── client/                # Frontend application
@@ -41,7 +41,7 @@ A modern full-stack web application designed for a seamless book borrowing exper
 
 ```
 
-## ⚙️ Installation & Setup
+## Installation & Setup
 
 1. **Clone the Repository:**
 ```bash
